@@ -32,7 +32,7 @@ class PaymentControllerIntegrationTest {
         PaymentRequest request = PaymentRequest.builder()
                 .targetAccount("ACC123")
                 .amount(new BigDecimal("100.00"))
-                .currency("USD")
+                .currency("GHS")
                 .description("Test Payment")
                 .build();
 
@@ -53,7 +53,7 @@ class PaymentControllerIntegrationTest {
         PaymentRequest request = PaymentRequest.builder()
                 .targetAccount("ACC123")
                 .amount(new BigDecimal("100.00"))
-                .currency("USD")
+                .currency("GHS")
                 .build();
 
         String key = UUID.randomUUID().toString();
@@ -84,13 +84,13 @@ class PaymentControllerIntegrationTest {
         PaymentRequest request1 = PaymentRequest.builder()
                 .targetAccount("ACC1")
                 .amount(new BigDecimal("10.00"))
-                .currency("USD")
+                .currency("GHS")
                 .build();
 
         PaymentRequest request2 = PaymentRequest.builder()
                 .targetAccount("ACC2")
                 .amount(new BigDecimal("20.00"))
-                .currency("USD")
+                .currency("GHS")
                 .build();
 
         // First request

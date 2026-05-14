@@ -41,15 +41,36 @@ public class IdempotencyService {
                 throw new PayloadMismatchException("Payload mismatch for idempotency key: " + key);
             }
             
-            // Check if in progress
+            // Check if in progress (Bonus: Block and Wait)
             if (record.getStatus() == IdempotencyRecord.RequestStatus.IN_PROGRESS) {
-                throw new InProgressException("Request already in progress for key: " + key);
+                return waitForCompletion(key);
             }
             
             return Optional.of(record);
         }
         
         return createNewRecord(key, hash);
+    }
+
+    private Optional<IdempotencyRecord> waitForCompletion(String key) {
+        int maxRetries = 30; // 30 seconds max wait
+        int retries = 0;
+        
+        while (retries < maxRetries) {
+            try {
+                Thread.sleep(1000); // Wait 1 second
+                retries++;
+                
+                Optional<IdempotencyRecord> record = repository.findByIdempotencyKey(key);
+                if (record.isPresent() && record.get().getStatus() == IdempotencyRecord.RequestStatus.COMPLETED) {
+                    return record;
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        throw new InProgressException("Timed out waiting for concurrent request to finish for key: " + key);
     }
 
     private Optional<IdempotencyRecord> createNewRecord(String key, String hash) {
