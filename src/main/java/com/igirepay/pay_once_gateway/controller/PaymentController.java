@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+/**
+ * REST Controller for processing payment requests with idempotency support.
+ */
 @RestController
 @RequestMapping("/process-payment")
 @RequiredArgsConstructor
@@ -22,14 +25,22 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Processes a payment request. If an Idempotency-Key is provided, it ensures 
+     * exactly-once processing by caching and returning the original result for retries.
+     * 
+     * @param idempotencyKey The unique key for this request.
+     * @param request The payment details.
+     * @return ResponseEntity containing the payment response.
+     * @throws Exception if any processing error occurs.
+     */
     @PostMapping
     public ResponseEntity<PaymentResponse> processPayment(
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody PaymentRequest request) throws Exception {
 
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
-            // If no key, process without idempotency (or require it)
-            // The assessment says "Gateway which implements an idempotency layer", so we should probably require it.
+            // Require idempotency key for this gateway
             return ResponseEntity.badRequest().build();
         }
 
@@ -55,7 +66,7 @@ public class PaymentController {
                     .header("X-Cache-Hit", "false")
                     .body(response);
         } catch (Exception e) {
-            // Update as FAILED if needed, but for simplicity we'll just throw
+            // Error handling is managed by GlobalExceptionHandler
             throw e;
         }
     }
