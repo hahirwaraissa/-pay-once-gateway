@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
 
+/**
+ * Service responsible for managing the idempotency lifecycle of payment requests.
+ * It handles payload hashing, state tracking, and race condition protection.
+ */
 @Service
 @RequiredArgsConstructor
 public class IdempotencyService {
@@ -21,6 +25,16 @@ public class IdempotencyService {
     private final IdempotencyRepository repository;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Checks if a request with the given idempotency key has already been processed.
+     * 
+     * @param key The unique idempotency key provided by the client.
+     * @param requestBody The payload of the request to verify for consistency.
+     * @return Optional containing the cached IdempotencyRecord if found and valid, 
+     *         or empty if this is a new request.
+     * @throws PayloadMismatchException if the key exists but the payload hash differs.
+     * @throws InProgressException if a concurrent request is already being processed.
+     */
     @Transactional
     public Optional<IdempotencyRecord> checkIdempotency(String key, Object requestBody) {
         String hash = generateHash(requestBody);
@@ -86,6 +100,13 @@ public class IdempotencyService {
         return Optional.empty();
     }
 
+    /**
+     * Updates an existing idempotency record with the final response details.
+     * 
+     * @param key The idempotency key.
+     * @param status The HTTP status code of the response.
+     * @param responseBody The JSON response body to cache.
+     */
     @Transactional
     public void updateRecord(String key, int status, String responseBody) {
         repository.findByIdempotencyKey(key).ifPresent(record -> {
