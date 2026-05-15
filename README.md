@@ -2,11 +2,11 @@
 
 Professional middleware service built for **IgirePay Technologies** to ensure payment requests are processed exactly once.
 
-## 🚀 Overview
+##  Overview
 
 The **Idempotency-Gateway** acts as a safety layer for payment processing. It prevents double-charging customers by tracking unique `Idempotency-Key` headers and caching their responses. If a request is retried with the same key, the gateway returns the previous result instead of re-processing the payment.
 
-### 📊 Architecture Logic Flow
+###  Architecture Logic Flow
 
 ```mermaid
 sequenceDiagram
@@ -44,7 +44,7 @@ sequenceDiagram
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 - **Java 17**
 - **Spring Boot 3.2.5**
 - **Spring Data JPA**
@@ -73,7 +73,7 @@ sequenceDiagram
 
 ---
 
-## 📖 API Documentation
+##  API Documentation
 
 ### Process Payment
 `POST /process-payment`
@@ -100,14 +100,14 @@ sequenceDiagram
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 The project includes comprehensive integration tests covering:
-- ✅ Success flow (First-time request)
-- ✅ Cache hit (Duplicate request)
-- ✅ Payload mismatch validation
-- ✅ In-progress blocking wait (Bonus)
-- ✅ API Key security
+-  Success flow (First-time request)
+- Cache hit (Duplicate request)
+- Payload mismatch validation
+-  In-progress blocking wait (Bonus)
+- API Key security
 
 Run tests using:
 ```bash
@@ -116,7 +116,7 @@ Run tests using:
 
 ---
 
-## 📐 Design Decisions
+## Design Decisions
 
 1. **Payload Integrity:** We store a SHA-256 hash of the request body. If a user sends the same key but different data (e.g., changing the amount from 100 to 500 GHS), we reject it with `422 Unprocessable Entity`.
 2. **In-Flight Handling:** To meet the bonus requirement, we implemented a polling wait mechanism. If Request B arrives while Request A is processing, Request B will block and wait for the result rather than erroring out.
