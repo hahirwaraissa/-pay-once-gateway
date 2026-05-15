@@ -54,7 +54,7 @@ sequenceDiagram
 
 ---
 
-## 🏁 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - JDK 17
