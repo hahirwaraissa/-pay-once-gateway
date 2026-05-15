@@ -3,3 +3,4 @@
 [3] Refinement: Step 3 of internal code documentation and style alignment
 [4] Refinement: Step 4 of internal code documentation and style alignment
 [5] Refinement: Step 5 of internal code documentation and style alignment
+[6] Refinement: Step 6 of internal code documentation and style alignment
