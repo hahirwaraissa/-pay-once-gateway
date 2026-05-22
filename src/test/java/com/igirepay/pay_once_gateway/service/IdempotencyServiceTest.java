@@ -43,7 +43,7 @@ class IdempotencyServiceTest {
         Optional<IdempotencyRecord> result = idempotencyService.checkIdempotency(key, request);
         
         assertTrue(result.isEmpty());
-        verify(repository, times(1)).save(any(IdempotencyRecord.class));
+        verify(repository, times(1)).saveAndFlush(any(IdempotencyRecord.class));
     }
 
     @Test
@@ -81,6 +81,6 @@ class IdempotencyServiceTest {
         
         assertTrue(result.isEmpty());
         verify(repository, times(1)).delete(expiredRecord);
-        verify(repository, times(1)).save(any(IdempotencyRecord.class));
+        verify(repository, times(1)).saveAndFlush(any(IdempotencyRecord.class));
     }
 }

@@ -118,6 +118,9 @@ Run tests using:
 
 ## Design Decisions
 
-1. **Payload Integrity:** We store a SHA-256 hash of the request body. If a user sends the same key but different data (e.g., changing the amount from 100 to 500 GHS), we reject it with `422 Unprocessable Entity`.
-2. **In-Flight Handling:** To meet the bonus requirement, we implemented a polling wait mechanism. If Request B arrives while Request A is processing, Request B will block and wait for the result rather than erroring out.
-3. **Developer's Choice (Key Expiration):** In a real fintech environment, keeping millions of keys forever is impractical. We added a 24-hour TTL (Time-To-Live) for keys. This ensures data privacy and storage efficiency.
+1. **Payload Integrity:** We store a SHA-256 hash of the request body. If a user sends the same key but different data (e.g., changing the amount from 100 to 500 GHS), we reject it with `422 Unprocessable Entity` (and message: "Idempotency key already used for a different request body.").
+2. **In-Flight Handling (Bonus):** Implemented a polling wait mechanism. If Request B arrives while Request A is processing, Request B blocks and waits for the result instead of returning 409 Conflict.
+   - *Hibernate L1 Cache Bypass:* Resolved Hibernate L1 cache querying issues by calling `entityManager.clear()` inside the polling loop. This forces Hibernate to query the database directly for status updates rather than returning stale in-memory cached state.
+   - *Nested Transactions for Race Conditions:* Handled concurrent insert race conditions (where Request A and Request B insert at the same millisecond) by using `Propagation.REQUIRES_NEW` on record creation. If a `DataIntegrityViolationException` is caught, we reload the existing record and block-wait on it.
+3. **Fail-Safe Key Release (Robustness):** If payment processing fails (throws an exception), the controller catches it and deletes the `IN_PROGRESS` key. This prevents keys from being locked in `IN_PROGRESS` forever and safely allows clients to retry.
+4. **Developer's Choice (Key Expiration & TTL Cleanup):** We store a 24-hour TTL for keys. To make this production-ready, we enabled `@EnableScheduling` and created a background scheduled task that runs every 10 minutes to delete expired keys from the database, preventing storage bloat.

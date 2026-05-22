@@ -51,7 +51,7 @@ public class PaymentController {
                     cachedRecord.get().getResponseBody(), 
                     PaymentResponse.class
             );
-            return ResponseEntity.ok()
+            return ResponseEntity.status(cachedRecord.get().getResponseStatus())
                     .header("X-Cache-Hit", "true")
                     .body(cachedResponse);
         }
@@ -66,7 +66,7 @@ public class PaymentController {
                     .header("X-Cache-Hit", "false")
                     .body(response);
         } catch (Exception e) {
-            // Error handling is managed by GlobalExceptionHandler
+            idempotencyService.deleteRecord(idempotencyKey);
             throw e;
         }
     }

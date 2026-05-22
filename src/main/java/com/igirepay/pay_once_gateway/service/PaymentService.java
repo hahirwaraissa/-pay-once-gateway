@@ -10,6 +10,10 @@ import java.util.UUID;
 public class PaymentService {
 
     public PaymentResponse process(PaymentRequest request) {
+        if ("ERR".equals(request.getCurrency())) {
+            throw new RuntimeException("Simulated payment processor error");
+        }
+
         // Simulate external payment processing delay
         try {
             Thread.sleep(2000);
@@ -20,7 +24,7 @@ public class PaymentService {
         return PaymentResponse.builder()
                 .transactionId(UUID.randomUUID().toString())
                 .status("SUCCESS")
-                .message("Payment of " + request.getAmount() + " " + request.getCurrency() + " processed successfully.")
+                .message("Charged " + request.getAmount().stripTrailingZeros().toPlainString() + " " + request.getCurrency())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
